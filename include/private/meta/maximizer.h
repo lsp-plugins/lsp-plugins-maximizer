@@ -33,17 +33,6 @@ namespace lsp
     {
         typedef struct maximizer
         {
-            static constexpr float  SAMPLES_MIN         = 0.0f;
-            static constexpr float  SAMPLES_MAX         = 10000.0f;
-            static constexpr float  SAMPLES_DFL         = 0.0f;
-            static constexpr float  SAMPLES_STEP        = 1.0f;
-
-            static constexpr float  TIME_MIN            = 0.0f;
-            static constexpr float  TIME_MAX            = 1000.0f;
-            static constexpr float  TIME_DFL            = 0.0f;
-            static constexpr float  TIME_STEP           = 0.01f;
-
-            static constexpr float  DELAY_OUT_MAX_TIME  = 10000.0f;
         } maximizer;
 
         // Plugin type metadata

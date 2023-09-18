@@ -40,24 +40,21 @@ namespace lsp
     {
         //-------------------------------------------------------------------------
         // Plugin metadata
+        static const port_item_t maximizer_tabs[] =
+        {
+            { "Level Control",      "maximizer.tabs.level_control"      },
+            { NULL, NULL }
+        };
+
+    #define MAXIMIZER_COMMON \
+        BYPASS
 
         // NOTE: Port identifiers should not be longer than 7 characters as it will overflow VST2 parameter name buffers
         static const port_t maximizer_mono_ports[] =
         {
             // Input and output audio ports
             PORTS_MONO_PLUGIN,
-
-            // Input controls
-            BYPASS,
-            INT_CONTROL("d_in", "Delay in samples", U_SAMPLES, maximizer::SAMPLES),
-            DRY_GAIN(0.0f),
-            WET_GAIN(1.0f),
-            OUT_GAIN,
-
-            // Output controls
-            METER_MINMAX("d_out", "Delay time in milliseconds", U_MSEC, 0.0f, maximizer::DELAY_OUT_MAX_TIME),
-            METER_GAIN("min", "Input gain", GAIN_AMP_P_48_DB),
-            METER_GAIN("mout", "Output gain", GAIN_AMP_P_48_DB),
+            MAXIMIZER_COMMON,
 
             PORTS_END
         };
@@ -67,48 +64,35 @@ namespace lsp
         {
             // Input and output audio ports
             PORTS_STEREO_PLUGIN,
-
-            // Input controls
-            BYPASS,
-            INT_CONTROL("d_in", "Delay in samples", U_SAMPLES, maximizer::SAMPLES),
-            DRY_GAIN(0.0f),
-            WET_GAIN(1.0f),
-            OUT_GAIN,
-
-            // Output controls
-            METER_MINMAX("d_out", "Delay time in milliseconds", U_MSEC, 0.0f, maximizer::DELAY_OUT_MAX_TIME),
-            METER_GAIN("min_l", "Input gain left",  GAIN_AMP_P_48_DB),
-            METER_GAIN("mout_l", "Output gain left",  GAIN_AMP_P_48_DB),
-            METER_GAIN("min_r", "Input gain right",  GAIN_AMP_P_48_DB),
-            METER_GAIN("mout_r", "Output gain right", GAIN_AMP_P_48_DB),
+            MAXIMIZER_COMMON,
 
             PORTS_END
         };
 
-        static const int plugin_classes[]       = { C_DELAY, -1 };
-        static const int clap_features_mono[]   = { CF_AUDIO_EFFECT, CF_UTILITY, CF_MONO, -1 };
-        static const int clap_features_stereo[] = { CF_AUDIO_EFFECT, CF_UTILITY, CF_STEREO, -1 };
+        static const int plugin_classes[]       = { C_LIMITER, -1 };
+        static const int clap_features_mono[]   = { CF_AUDIO_EFFECT, CF_LIMITER, CF_MONO, -1 };
+        static const int clap_features_stereo[] = { CF_AUDIO_EFFECT, CF_LIMITER, CF_STEREO, -1 };
 
         const meta::bundle_t maximizer_bundle =
         {
             "maximizer",
-            "Plugin Template",
-            B_UTILITIES,
+            "Maximizer",
+            B_DYNAMICS,
             "", // TODO: provide ID of the video on YouTube
-            "" // TODO: write plugin description, should be the same to the english version in 'bundles.json'
+            "This plugins applies different techniques to make the sound as loud as possible while keeping it clean"
         };
 
         const plugin_t maximizer_mono =
         {
-            "Pluginschablone Mono",
-            "Plugin Template Mono",
-            "PS1M",
+            "Maximizer Mono",
+            "Maximizer Mono",
+            "SM1M",
             &developers::v_sadovnikov,
             "maximizer_mono",
             LSP_LV2_URI("maximizer_mono"),
             LSP_LV2UI_URI("maximizer_mono"),
-            "xxxx",         // TODO: fill valid VST2 ID (4 letters/digits)
-            1,              // TODO: fill valid LADSPA identifier (positive decimal integer)
+            "sm1m",
+            LSP_LADSPA_MAXIMIZER_BASE + 0,
             LSP_LADSPA_URI("maximizer_mono"),
             LSP_CLAP_URI("maximizer_mono"),
             LSP_PLUGINS_MAXMIZER_VERSION,
@@ -116,7 +100,7 @@ namespace lsp
             clap_features_mono,
             E_DUMP_STATE,
             maximizer_mono_ports,
-            "template/plugin.xml",
+            "dynamics/maximizer/mono.xml",
             NULL,
             mono_plugin_port_groups,
             &maximizer_bundle
@@ -124,15 +108,15 @@ namespace lsp
 
         const plugin_t maximizer_stereo =
         {
-            "Pluginschablone Stereo",
-            "Plugin Template Stereo",
-            "PS1S",
+            "Maximizer Stereo",
+            "Maximizer Stereo",
+            "SM1S",
             &developers::v_sadovnikov,
             "maximizer_stereo",
             LSP_LV2_URI("maximizer_stereo"),
             LSP_LV2UI_URI("maximizer_stereo"),
-            "yyyy",         // TODO: fill valid VST2 ID (4 letters/digits)
-            2,              // TODO: fill valid LADSPA identifier (positive decimal integer)
+            "sm1s",
+            LSP_LADSPA_MAXIMIZER_BASE + 1,
             LSP_LADSPA_URI("maximizer_stereo"),
             LSP_CLAP_URI("maximizer_stereo"),
             LSP_PLUGINS_MAXMIZER_VERSION,
@@ -140,7 +124,7 @@ namespace lsp
             clap_features_stereo,
             E_DUMP_STATE,
             maximizer_stereo_ports,
-            "template/plugin.xml",
+            "dynamics/maximizer/stereo.xml",
             NULL,
             stereo_plugin_port_groups,
             &maximizer_bundle

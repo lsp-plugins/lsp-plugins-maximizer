@@ -22,8 +22,10 @@
 #ifndef PRIVATE_PLUGINS_MAXIMIZER_H_
 #define PRIVATE_PLUGINS_MAXIMIZER_H_
 
-#include <lsp-plug.in/dsp-units/util/Delay.h>
 #include <lsp-plug.in/dsp-units/ctl/Bypass.h>
+#include <lsp-plug.in/dsp-units/util/Delay.h>
+#include <lsp-plug.in/dsp-units/util/Oversampler.h>
+#include <lsp-plug.in/dsp-units/util/SpectralSplitter.h>
 #include <lsp-plug.in/plug-fw/plug.h>
 #include <private/meta/maximizer.h>
 
@@ -41,62 +43,61 @@ namespace lsp
                 maximizer (const maximizer &);
 
             protected:
-                enum mode_t
+                enum band_type_t
                 {
-                    CD_MONO,
-                    CD_STEREO,
-                    CD_X2_STEREO
+                    BAND_K_FULL,
+                    BAND_LOW,
+                    BAND_K_LOW,
+                    BAND_MID,
+                    BAND_K_MID,
+                    BAND_HIGH,
+                    BAND_K_HIGH,
+
+                    BAND_COUNT
                 };
+
+                typedef struct band_t
+                {
+                    dspu::Delay             sInDelay;           // Delay compensation for input level adjustment
+                    float                  *vBuffer;            // Processing buffer
+                    float                  *vWeighting;         // Weighting and crossover functions combined
+                } band_t;
 
                 typedef struct channel_t
                 {
-                    // DSP processing modules
-                    dspu::Delay         sLine;              // Delay line
-                    dspu::Bypass        sBypass;            // Bypass
+                    dspu::Bypass            sBypass;            // Bypass
+                    dspu::Oversampler       sOversampler;       // Oversampler
+                    dspu::SpectralSplitter  sSplitter;          // Spectral splitter
 
-                    // Parameters
-                    ssize_t             nDelay;             // Actual delay of the signal
-                    float               fDryGain;           // Dry gain (unprocessed signal)
-                    float               fWetGain;           // Wet gain (processed signal)
+                    float                  *vIn;                // Input buffer
+                    float                  *vOut;               // Output buffer
+                    float                  *vFftFreqs;          // List of FFT frequencies
+                    float                  *vWeighting;         // Weighted magnitude
 
-                    // Input ports
-                    plug::IPort        *pIn;                // Input port
-                    plug::IPort        *pOut;               // Output port
-                    plug::IPort        *pDelay;             // Delay (in samples)
-                    plug::IPort        *pDry;               // Dry control
-                    plug::IPort        *pWet;               // Wet control
-
-                    // Output ports
-                    plug::IPort        *pOutDelay;          // Output delay time
-                    plug::IPort        *pInLevel;           // Input signal level
-                    plug::IPort        *pOutLevel;          // Output signal level
+                    band_t                  vBands[BAND_COUNT]; // Overall list of bands
                 } channel_t;
 
             protected:
-                size_t              nChannels;          // Number of channels
-                channel_t          *vChannels;          // Delay channels
-                float              *vBuffer;            // Temporary buffer for audio processing
+                size_t                  nChannels;          // Number of channels
+                channel_t              *vChannels;          // Channel data
 
-                plug::IPort        *pBypass;            // Bypass
-                plug::IPort        *pGainOut;           // Output gain
-
-                uint8_t            *pData;              // Allocated data
+                uint8_t                *pData;              // Allocated data
 
             protected:
-                void                do_destroy();
+                void                    do_destroy();
 
             public:
                 explicit maximizer(const meta::plugin_t *meta);
                 virtual ~maximizer() override;
 
-                virtual void        init(plug::IWrapper *wrapper, plug::IPort **ports) override;
-                virtual void        destroy() override;
+                virtual void            init(plug::IWrapper *wrapper, plug::IPort **ports) override;
+                virtual void            destroy() override;
 
             public:
-                virtual void        update_sample_rate(long sr) override;
-                virtual void        update_settings() override;
-                virtual void        process(size_t samples) override;
-                virtual void        dump(dspu::IStateDumper *v) const override;
+                virtual void            update_sample_rate(long sr) override;
+                virtual void            update_settings() override;
+                virtual void            process(size_t samples) override;
+                virtual void            dump(dspu::IStateDumper *v) const override;
         };
 
     } /* namespace plugins */
